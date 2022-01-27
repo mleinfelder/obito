@@ -1,0 +1,52 @@
+version: '3.1'
+
+networks:
+     homolog-network:
+       driver: bridge
+
+services:
+
+  dev-mysql:
+    image: 'mysql:5.7'
+    restart: always
+    networks:
+      - homolog-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=Fld@44551
+      - MYSQL_DATABASE=moodle
+      - MYSQL_USER=moodle
+      - MYSQL_PASSWORD=123456
+
+  haproxy:
+    image: 'dockercloud/haproxy'
+    restart: always
+    networks:
+      - homolog-network
+    ports:
+      - '8888:80'
+    links:
+      - wordpress
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - wordpress
+
+  wordpress:
+    image: 'wordpress:latest'
+    restart: always
+    networks:
+      - homolog-network
+    ports:
+      - target: 3000
+
+        protocol: tcp
+        mode: host
+    environment:
+      - WORDPRESS_DB_HOST=dev-mysql
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=r3dl@bel1sMine
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_TABLE_PREFIX=wplab
+    depends_on:
+      - dev-mysql
+
